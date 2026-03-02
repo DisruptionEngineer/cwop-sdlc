@@ -1,0 +1,12 @@
+{
+  "name": "cwop-dark",
+  "colors": {
+    "success": "#00dc64",
+    "accent": "#64b4ff",
+    "warning": "#ffb400",
+    "dim": "#78788c",
+    "muted": "#484f58",
+    "error": "#ff5050",
+    "brand": "#00c8b4"
+  }
+}

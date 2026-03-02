@@ -1,0 +1,25 @@
+{
+  "name": "cwop-sdlc",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Context Window Orchestration Platform — SDLC Extensions for Pi",
+  "scripts": {
+    "build": "bun build src/gateway/server.ts --outdir dist --target bun",
+    "gateway": "bun run src/gateway/server.ts",
+    "gateway:dev": "bun --watch run src/gateway/server.ts",
+    "test": "bun test",
+    "typecheck": "tsc --noEmit",
+    "setup": "bash setup.sh"
+  },
+  "dependencies": {
+    "@mariozechner/pi-coding-agent": "latest"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5.7.0"
+  },
+  "engines": {
+    "bun": ">=1.3.2"
+  },
+  "license": "MIT"
+}

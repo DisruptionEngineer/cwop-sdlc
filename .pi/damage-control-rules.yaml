@@ -1,0 +1,30 @@
+# CWOP-SDLC Damage Control Rules
+# Loaded by Pi's damage-control extension to protect against dangerous operations
+
+blocked_commands:
+  - pattern: "rm -rf /"
+    message: "Blocked: recursive delete of root"
+  - pattern: "rm -rf ~"
+    message: "Blocked: recursive delete of home directory"
+  - pattern: "DROP DATABASE"
+    message: "Blocked: database drop. Use migration scripts instead."
+  - pattern: "TRUNCATE TABLE"
+    message: "Blocked: table truncation. Use DELETE with WHERE clause."
+  - pattern: "git push --force"
+    message: "Blocked: force push. Use --force-with-lease instead."
+  - pattern: "git reset --hard"
+    message: "Blocked: hard reset. Stash changes first."
+
+protected_paths:
+  read_only:
+    - "*.pfx"
+    - "*.key"
+    - "*.pem"
+    - "appsettings.Production.json"
+    - "**/.env"
+    - "**/secrets.*"
+  no_delete:
+    - "*.csproj"
+    - "*.sln"
+    - "Program.cs"
+    - "Startup.cs"

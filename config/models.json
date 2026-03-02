@@ -1,0 +1,49 @@
+{
+  "recommended": [
+    {
+      "id": "qwen2.5-coder:7b",
+      "name": "Qwen 2.5 Coder 7B",
+      "description": "Best balance of speed and quality for code generation",
+      "contextWindow": 32768,
+      "sizeGb": 4.7,
+      "useCase": ["code-generation", "code-review"],
+      "minRamGb": 8
+    },
+    {
+      "id": "qwen2.5-coder:14b",
+      "name": "Qwen 2.5 Coder 14B",
+      "description": "Higher quality code review and complex generation",
+      "contextWindow": 32768,
+      "sizeGb": 9.0,
+      "useCase": ["code-review"],
+      "minRamGb": 16
+    },
+    {
+      "id": "deepseek-coder-v2:16b",
+      "name": "DeepSeek Coder V2 16B",
+      "description": "Strong multi-language code understanding",
+      "contextWindow": 65536,
+      "sizeGb": 9.4,
+      "useCase": ["code-generation", "code-review"],
+      "minRamGb": 16
+    },
+    {
+      "id": "codellama:7b",
+      "name": "Code Llama 7B",
+      "description": "Meta's code model. Good C# and SQL support",
+      "contextWindow": 16384,
+      "sizeGb": 3.8,
+      "useCase": ["code-generation"],
+      "minRamGb": 8
+    },
+    {
+      "id": "qwen2.5-coder:1.5b",
+      "name": "Qwen 2.5 Coder 1.5B",
+      "description": "Lightweight. Fast completions on limited hardware",
+      "contextWindow": 32768,
+      "sizeGb": 1.0,
+      "useCase": ["code-generation"],
+      "minRamGb": 4
+    }
+  ]
+}

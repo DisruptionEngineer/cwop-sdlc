@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CWOP-SDLC Dashboard</title>
+  <link rel="stylesheet" href="/styles/main.css">
+</head>
+<body>
+  <div class="app">
+    <!-- Header -->
+    <header class="header">
+      <h1><span class="brand">CWOP</span> SDLC Dashboard</h1>
+      <div class="status-bar">
+        <span>
+          <span id="ollama-dot" class="status-dot unknown"></span>
+          Ollama
+        </span>
+        <span id="model-count">0 models</span>
+        <span>
+          <span id="status-dot" class="status-dot unknown"></span>
+          <span id="status-text">Connecting...</span>
+        </span>
+      </div>
+    </header>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <!-- Extensions -->
+      <div>
+        <div class="card-header">
+          <h3>Extensions</h3>
+        </div>
+        <div id="extension-cards" style="display:flex;flex-direction:column;gap:8px">
+          <div class="card">
+            <p style="font-size:12px;color:var(--text-muted)">Loading extensions...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- CWOP Budget -->
+      <div class="card">
+        <div class="card-header">
+          <h3>CWOP Budget</h3>
+        </div>
+        <div id="cwop-meter" class="meter">
+          <div class="meter-fill low" style="width:0%"></div>
+        </div>
+        <p id="cwop-pct" style="font-size:11px;color:var(--text-secondary);margin-top:6px;font-family:var(--font-mono)">
+          0/0 tokens (0%)
+        </p>
+        <ul id="cwop-slots" class="slot-list" style="margin-top:10px">
+          <li class="slot-item">
+            <span class="inactive">○</span>
+            <span style="color:var(--text-muted)">Waiting for data...</span>
+            <span></span>
+            <span></span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Quick Commands -->
+      <div class="card">
+        <div class="card-header">
+          <h3>Quick Commands</h3>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;font-size:12px;font-family:var(--font-mono)">
+          <code style="color:var(--text-secondary)">just ext-builder</code>
+          <code style="color:var(--text-secondary)">just ext-review</code>
+          <code style="color:var(--text-secondary)">just ext-all</code>
+          <code style="color:var(--text-secondary)">just team</code>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Chat Area -->
+    <main class="main">
+      <div id="ext-tabs" class="extension-selector">
+        <button class="ext-tab active" data-ext="code-builder">Code Builder</button>
+        <button class="ext-tab" data-ext="code-review">Code Review</button>
+      </div>
+      <div class="chat-container">
+        <div id="chat-messages" class="chat-messages">
+          <div class="message assistant">
+            Welcome to CWOP-SDLC. Select an extension and start a conversation.
+            The Code Builder generates C#, SQL, and Azure code. The Code Review analyzes your PRs.
+          </div>
+        </div>
+        <div class="chat-input-area">
+          <textarea id="chat-input" class="chat-input" rows="2"
+            placeholder="Ask the Code Builder to generate C#, SQL, Azure resources..."></textarea>
+          <button id="send-btn" class="send-btn">Send</button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script type="module" src="/js/main.js"></script>
+</body>
+</html>
