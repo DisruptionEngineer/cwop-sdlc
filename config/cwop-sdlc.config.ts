@@ -1,7 +1,11 @@
+export type NetworkMode = "local" | "device";
+
 export interface CWOPSdlcConfig {
   gateway: {
     port: number;
     host: string;
+    networkMode: NetworkMode;
+    apiKey: string;
   };
   ollama: {
     baseUrl: string;
@@ -23,6 +27,8 @@ export const defaultConfig: CWOPSdlcConfig = {
   gateway: {
     port: 18790,
     host: "127.0.0.1",
+    networkMode: "local",
+    apiKey: "",
   },
   ollama: {
     baseUrl: "http://localhost:11434",
@@ -71,6 +77,21 @@ export function loadConfig(): CWOPSdlcConfig {
     if (!isNaN(budget) && budget > 0) {
       config.cwop.defaultBudget = budget;
     }
+  }
+
+  // Network / device mode
+  if (process.env.CWOP_GATEWAY_HOST) {
+    config.gateway.host = process.env.CWOP_GATEWAY_HOST;
+  }
+  if (process.env.CWOP_NETWORK_MODE === "device") {
+    config.gateway.networkMode = "device";
+    // Default to 0.0.0.0 in device mode unless explicitly overridden
+    if (!process.env.CWOP_GATEWAY_HOST) {
+      config.gateway.host = "0.0.0.0";
+    }
+  }
+  if (process.env.CWOP_API_KEY) {
+    config.gateway.apiKey = process.env.CWOP_API_KEY;
   }
 
   return config;

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=720, initial-scale=1.0, user-scalable=no">
+  <title>Crew Chief</title>
+  <link rel="stylesheet" href="/customer/styles/customer.css">
+</head>
+<body>
+  <!-- Header -->
+  <div class="header">
+    <span class="header-brand"><span class="brand">CREW CHIEF</span></span>
+    <div class="header-status">
+      <span id="mode-label" class="mode-label">TRACK</span>
+      <span id="status-dot" class="status-dot pending"></span>
+    </div>
+  </div>
+
+  <!-- Device Bar -->
+  <div class="device-bar" id="device-bar">
+    <span class="device-bar-label">DEVICES</span>
+    <div class="device-chips" id="device-chips">
+      <span class="device-chip offline">No devices</span>
+    </div>
+    <span class="sim-badge" id="sim-badge" style="display:none">SIM</span>
+  </div>
+
+  <!-- Live OBD Strip -->
+  <div class="live-strip" id="live-strip" style="display:none">
+    <div class="live-gauge"><span class="live-val" id="lv-rpm">--</span><span class="live-lbl">RPM</span></div>
+    <div class="live-gauge"><span class="live-val" id="lv-coolant">--</span><span class="live-lbl">COOLANT</span></div>
+    <div class="live-gauge"><span class="live-val" id="lv-load">--</span><span class="live-lbl">LOAD</span></div>
+    <div class="live-gauge"><span class="live-val" id="lv-throttle">--</span><span class="live-lbl">THROTTLE</span></div>
+    <div class="live-gauge"><span class="live-val" id="lv-timing">--</span><span class="live-lbl">TIMING</span></div>
+    <div class="live-dtcs" id="lv-dtcs" style="display:none">
+      <span class="dtc-icon">!</span>
+      <span id="lv-dtc-list" class="dtc-list"></span>
+    </div>
+  </div>
+
+  <!-- Main Area -->
+  <div class="main-area">
+    <!-- Welcome / Status Message -->
+    <div id="message-area" class="message-area">
+      <h2 id="msg-title" class="msg-title">Ready for Diagnostics</h2>
+      <p id="msg-body" class="msg-body">
+        Connect to your vehicle's OBD-II port or enter readings manually to get started.
+        Your technician will guide you through the process.
+      </p>
+    </div>
+
+    <!-- Snapshot Display -->
+    <div id="snapshot-area" class="snapshot-area" style="display:none">
+      <div class="snap-header">
+        <span id="snap-type" class="snap-type">PRE-RACE</span>
+        <span id="snap-time" class="snap-time"></span>
+      </div>
+      <div id="snap-vehicle" class="snap-vehicle"></div>
+      <div id="snap-summary" class="snap-summary"></div>
+    </div>
+
+    <!-- Comparison Display -->
+    <div id="compare-area" class="compare-area" style="display:none">
+      <h3 class="compare-title">Before / After Comparison</h3>
+      <div id="compare-changes" class="compare-changes"></div>
+      <div id="compare-summary" class="compare-summary"></div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer" id="footer">
+    <span id="footer-source" class="footer-source">No connection</span>
+    <div class="scenario-bar" id="scenario-bar">
+      <span class="scenario-label">SIM</span>
+      <button class="scenario-toggle" id="scenario-toggle">Loading...</button>
+    </div>
+    <span id="footer-devices" class="footer-devices">0 devices</span>
+  </div>
+
+  <!-- Scenario dropdown rendered at body level to avoid clipping -->
+  <div class="scenario-menu" id="scenario-menu"></div>
+
+  <script src="/customer/js/customer.js"></script>
+</body>
+</html>

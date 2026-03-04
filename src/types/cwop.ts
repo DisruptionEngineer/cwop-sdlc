@@ -32,6 +32,15 @@ export interface BudgetStatus {
   utilizationPct: number;
   slots: SlotStatus[];
   assembledAt: number;
+  /** Recent audit entries (optional, included when requested). */
+  recentAudit?: Array<{
+    timestamp: number;
+    slotName: string;
+    action: string;
+    tokensBefore: number;
+    tokensAfter: number;
+    contentPreview: string;
+  }>;
 }
 
 export type OverflowStrategy = "truncate" | "drop-low-priority" | "summarize";

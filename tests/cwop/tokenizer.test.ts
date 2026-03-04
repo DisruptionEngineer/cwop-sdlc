@@ -36,6 +36,6 @@ describe("truncateToTokens", () => {
     const text = "a".repeat(1000);
     const result = truncateToTokens(text, 50);
     expect(result.length).toBeLessThan(text.length);
-    expect(result).toContain("[...truncated to fit context budget]");
+    expect(result).toContain("[...truncated]");
   });
 });

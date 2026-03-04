@@ -2,8 +2,11 @@
  * CWOP Code Review — PR review assistant extension for Pi
  *
  * Reviews code changes with CWOP-managed context windows.
- * Slots: review persona, checklist, PR metadata, PR diff,
- *        file context, related tests, ADO work items.
+ * Hooks into Pi's full event lifecycle:
+ *   input         → pr_metadata (user's review request)
+ *   tool_result   → pr_diff, changed_file_context, related_tests (actual content)
+ *   tool_call     → tracks git operations
+ *   message_end   → past_review_comments (assistant's review output)
  *
  * Usage: pi -e extensions/code-review.ts
  */
@@ -46,15 +49,126 @@ Azure Review Checklist:
 - [ ] Retry policies with exponential backoff
 - [ ] Resource limits documented in comments`;
 
+const CODE_EXTENSIONS = new Set([
+  ".cs", ".csx", ".csproj", ".sql", ".ts", ".tsx", ".js",
+  ".py", ".go", ".rs", ".json", ".yaml", ".yml", ".bicep",
+]);
+
+const TEST_PATTERNS = ["test", "spec", "Test", "Spec", "_test", ".test"];
+
+function isTestFile(path: string): boolean {
+  return TEST_PATTERNS.some(p => path.includes(p));
+}
+
+function isCodeFile(path: string): boolean {
+  return [...CODE_EXTENSIONS].some(ext => path.endsWith(ext));
+}
+
 export default function (pi: ExtensionAPI) {
   const cwop = new CWOPEngine(CODE_REVIEW_PRESET);
   let reviewCount = 0;
   let filesReviewed: string[] = [];
+  let recentFileReads: { path: string; content: string }[] = [];
 
   // Load static slots
   cwop.updateSlot("system_persona", REVIEW_PERSONA);
   cwop.updateSlot("review_checklist", REVIEW_CHECKLIST);
 
+  // ── INPUT EVENT: Capture user's review request → pr_metadata ──
+  pi.on("input", async (event) => {
+    if (event.text && event.text.trim().length > 0) {
+      cwop.updateSlot("pr_metadata", event.text);
+    }
+    return { action: "continue" as const };
+  });
+
+  // ── TOOL CALL EVENT: Track git operations and writes ──
+  pi.on("tool_call", async (event) => {
+    if (event.toolName === "bash" && event.input) {
+      const input = event.input as { command: string };
+      const cmd = input.command ?? "";
+
+      // Mark that a git diff operation is happening
+      if (cmd.includes("git diff") || cmd.includes("git log") || cmd.includes("git show")) {
+        reviewCount++;
+      }
+    }
+  });
+
+  // ── TOOL RESULT EVENT: Capture actual content from tool outputs ──
+  pi.on("tool_result", async (event) => {
+    // Extract text content helper
+    const textContent = (event.content ?? [])
+      .filter((c: { type: string }) => c.type === "text")
+      .map((c: { type: string; text?: string }) => c.text ?? "")
+      .join("\n");
+
+    // Read tool results → file context slots
+    if (event.toolName === "read" && !event.isError && textContent.length > 0) {
+      const input = event.input as { path?: string };
+      const path = input.path ?? "unknown";
+      const fileName = path.split("/").pop() ?? path;
+
+      if (isCodeFile(path)) {
+        filesReviewed.push(fileName);
+        if (filesReviewed.length > 10) filesReviewed = filesReviewed.slice(-10);
+
+        // Route to test slot or file context slot
+        if (isTestFile(path)) {
+          cwop.updateSlot("related_tests", `--- ${path} ---\n${textContent}`);
+        } else {
+          // Add to rolling read buffer
+          recentFileReads.push({ path, content: textContent });
+          if (recentFileReads.length > 3) recentFileReads = recentFileReads.slice(-3);
+
+          const assembled = recentFileReads
+            .map(r => `--- ${r.path} ---\n${r.content}`)
+            .join("\n\n");
+          cwop.updateSlot("changed_file_context", assembled);
+        }
+      }
+    }
+
+    // Bash tool results → capture git diff output
+    if (event.toolName === "bash" && !event.isError && textContent.length > 0) {
+      const input = event.input as { command?: string };
+      const cmd = input.command ?? "";
+
+      if (cmd.includes("git diff")) {
+        cwop.updateSlot("pr_diff", textContent);
+      }
+
+      if (cmd.includes("git log")) {
+        // Git log output can supplement PR metadata
+        const currentMeta = cwop.slots.get("pr_metadata")?.content ?? "";
+        cwop.updateSlot("pr_metadata", currentMeta + "\n\nGit History:\n" + textContent);
+      }
+
+      // Detect Azure DevOps work item references
+      if (cmd.includes("az boards") || textContent.includes("AB#") || textContent.includes("work-item")) {
+        cwop.updateSlot("ado_work_items", textContent);
+      }
+    }
+
+    return { action: "continue" as const };
+  });
+
+  // ── MESSAGE END EVENT: Capture assistant review output ──
+  pi.on("message_end", async (event) => {
+    const msg = event.message;
+    if (msg && msg.role === "assistant") {
+      const text = (msg.content ?? [])
+        .filter((c: { type: string }) => c.type === "text")
+        .map((c: { type: string; text?: string }) => c.text ?? "")
+        .join("\n");
+
+      if (text.length > 0 && (text.includes("[CRITICAL]") || text.includes("[WARN]") || text.includes("[SUGGESTION]"))) {
+        cwop.updateSlot("past_review_comments", text);
+      }
+    }
+  });
+
+  // ── SESSION START: Set up UI widgets ──
   pi.on("session_start", async (_event, ctx) => {
     ctx.ui.setFooter((_tui, theme, _footerData) => {
       return {
@@ -102,26 +216,6 @@ export default function (pi: ExtensionAPI) {
         invalidate() {},
       };
     });
-  });
-
-  pi.on("tool_call", async (event, _ctx) => {
-    // Track file reads as potential review targets
-    if (event.toolName === "read" && event.args?.file_path) {
-      const path = event.args.file_path as string;
-      if (path.endsWith(".cs") || path.endsWith(".sql") || path.endsWith(".ts") || path.endsWith(".py")) {
-        filesReviewed.push(path.split("/").pop() ?? path);
-        if (filesReviewed.length > 10) filesReviewed = filesReviewed.slice(-10);
-      }
-    }
-
-    // Track bash commands that look like git operations
-    if (event.toolName === "bash" && event.args?.command) {
-      const cmd = event.args.command as string;
-      if (cmd.includes("git diff") || cmd.includes("git log")) {
-        cwop.updateSlot("pr_diff", `[Git diff captured from: ${cmd}]`);
-        reviewCount++;
-      }
-    }
   });
 }
 

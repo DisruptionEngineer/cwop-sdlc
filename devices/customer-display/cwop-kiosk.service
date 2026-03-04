@@ -1,0 +1,16 @@
+[Unit]
+Description=CWOP Customer Display Kiosk
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=pi
+Environment=DISPLAY=:0
+ExecStartPre=/bin/sleep 10
+ExecStart=/home/pi/cwop-sdlc/devices/customer-display/kiosk.sh
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=graphical.target

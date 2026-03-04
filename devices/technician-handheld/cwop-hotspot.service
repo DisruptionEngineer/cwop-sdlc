@@ -1,0 +1,13 @@
+[Unit]
+Description=CWOP WiFi Hotspot
+Before=cwop-gateway.service
+After=network.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/sbin/hostapd -B /etc/hostapd/hostapd.conf
+ExecStop=/usr/bin/killall hostapd
+
+[Install]
+WantedBy=multi-user.target

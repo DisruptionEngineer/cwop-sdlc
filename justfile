@@ -41,12 +41,26 @@ ext-all:
 team:
     pi -e extensions/code-builder.ts -e extensions/code-review.ts -e extensions/cwop-dashboard.ts --agent .pi/agents/cwop-team.yaml
 
+# --- Device Mode ---
+gateway-device:
+    CWOP_NETWORK_MODE=device CWOP_GATEWAY_HOST=0.0.0.0 bun run src/gateway/server.ts
+
+gateway-device-dev:
+    CWOP_NETWORK_MODE=device CWOP_GATEWAY_HOST=0.0.0.0 bun --watch run src/gateway/server.ts
+
+# Device setup (run on target Pi hardware)
+setup-pi5:
+    bash devices/technician-handheld/setup-pi5.sh
+
+setup-zero2w:
+    bash devices/customer-display/setup-zero2w.sh
+
 # --- Testing ---
 test:
-    bun test
+    bun test tests/
 
 test-watch:
-    bun test --watch
+    bun test --watch tests/
 
 typecheck:
     tsc --noEmit

@@ -2,99 +2,199 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CWOP-SDLC Dashboard</title>
-  <link rel="stylesheet" href="/styles/main.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Crew Chief Diagnostics</title>
+  <link rel="stylesheet" href="/styles/theme.css">
+  <link rel="stylesheet" href="/styles/diag.css">
 </head>
 <body>
   <div class="app">
     <!-- Header -->
     <header class="header">
-      <h1><span class="brand">CWOP</span> SDLC Dashboard</h1>
-      <div class="status-bar">
-        <span>
-          <span id="ollama-dot" class="status-dot unknown"></span>
-          Ollama
-        </span>
-        <span id="model-count">0 models</span>
-        <span>
-          <span id="status-dot" class="status-dot unknown"></span>
-          <span id="status-text">Connecting...</span>
+      <div class="header-left">
+        <h1><span class="brand">CREW CHIEF</span> DIAGNOSTICS</h1>
+      </div>
+      <div class="header-right">
+        <select id="mode-select" class="mode-select">
+          <option value="track">Track</option>
+          <option value="shop">Shop</option>
+          <option value="home">Home</option>
+        </select>
+        <span class="status-pill" id="ws-status">
+          <span class="status-dot unknown"></span>
+          <span>Offline</span>
         </span>
       </div>
     </header>
 
-    <!-- Sidebar -->
-    <aside class="sidebar">
-      <!-- Extensions -->
-      <div>
-        <div class="card-header">
-          <h3>Extensions</h3>
+    <!-- Device Bar -->
+    <div class="device-bar">
+      <span class="device-bar-label">DEVICES</span>
+      <div class="device-chips" id="device-chips">
+        <span class="device-chip offline">Connecting...</span>
+      </div>
+      <span class="sim-status-badge" id="sim-status-badge" style="display:none">SIM ●</span>
+    </div>
+
+    <!-- Input Method Toggle -->
+    <div class="input-toggle">
+      <button class="toggle-btn active" data-method="obd">OBD-II</button>
+      <button class="toggle-btn" data-method="manual">Carb / Manual</button>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+      <!-- OBD-II Panel -->
+      <div id="obd-panel" class="panel active">
+        <!-- BT Connection -->
+        <div class="section bt-section">
+          <div class="section-row">
+            <span class="section-icon">BT</span>
+            <span id="bt-status-text">Not Connected</span>
+            <div class="spacer"></div>
+            <button id="bt-scan-btn" class="btn btn-sm">Scan</button>
+            <button id="sim-connect-btn" class="btn btn-sm btn-sim">Connect Sim</button>
+            <button id="bt-disconnect-btn" class="btn btn-sm btn-danger" style="display:none">Disconnect</button>
+          </div>
+          <div id="bt-devices" class="bt-device-list" style="display:none"></div>
         </div>
-        <div id="extension-cards" style="display:flex;flex-direction:column;gap:8px">
-          <div class="card">
-            <p style="font-size:12px;color:var(--text-muted)">Loading extensions...</p>
+
+        <!-- Live Data Grid -->
+        <div class="section">
+          <div class="gauge-grid">
+            <div class="gauge-card"><div class="gauge-value" id="g-rpm">--</div><div class="gauge-label">RPM</div></div>
+            <div class="gauge-card"><div class="gauge-value" id="g-coolant">--</div><div class="gauge-label">Coolant</div></div>
+            <div class="gauge-card"><div class="gauge-value" id="g-load">--</div><div class="gauge-label">Load</div></div>
+            <div class="gauge-card"><div class="gauge-value" id="g-throttle">--</div><div class="gauge-label">Throttle</div></div>
+          </div>
+          <div class="trim-row">
+            <div class="trim-item"><span class="trim-label">STFT B1</span><span class="trim-value" id="g-stft1">--</span></div>
+            <div class="trim-item"><span class="trim-label">LTFT B1</span><span class="trim-value" id="g-ltft1">--</span></div>
+            <div class="trim-item"><span class="trim-label">STFT B2</span><span class="trim-value" id="g-stft2">--</span></div>
+            <div class="trim-item"><span class="trim-label">LTFT B2</span><span class="trim-value" id="g-ltft2">--</span></div>
+          </div>
+          <div class="trim-row">
+            <div class="trim-item"><span class="trim-label">MAF</span><span class="trim-value" id="g-maf">--</span></div>
+            <div class="trim-item"><span class="trim-label">O2 B1S1</span><span class="trim-value" id="g-o2">--</span></div>
+            <div class="trim-item"><span class="trim-label">Timing</span><span class="trim-value" id="g-timing">--</span></div>
+            <div class="trim-item"><span class="trim-label">Speed</span><span class="trim-value" id="g-speed">--</span></div>
+          </div>
+          <div id="dtc-row" class="dtc-row" style="display:none">
+            <span class="dtc-label">DTCs:</span>
+            <div id="dtc-badges" class="dtc-badges"></div>
           </div>
         </div>
       </div>
 
-      <!-- CWOP Budget -->
-      <div class="card">
-        <div class="card-header">
-          <h3>CWOP Budget</h3>
-        </div>
-        <div id="cwop-meter" class="meter">
-          <div class="meter-fill low" style="width:0%"></div>
-        </div>
-        <p id="cwop-pct" style="font-size:11px;color:var(--text-secondary);margin-top:6px;font-family:var(--font-mono)">
-          0/0 tokens (0%)
-        </p>
-        <ul id="cwop-slots" class="slot-list" style="margin-top:10px">
-          <li class="slot-item">
-            <span class="inactive">○</span>
-            <span style="color:var(--text-muted)">Waiting for data...</span>
-            <span></span>
-            <span></span>
-          </li>
-        </ul>
-      </div>
-
-      <!-- Quick Commands -->
-      <div class="card">
-        <div class="card-header">
-          <h3>Quick Commands</h3>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:4px;font-size:12px;font-family:var(--font-mono)">
-          <code style="color:var(--text-secondary)">just ext-builder</code>
-          <code style="color:var(--text-secondary)">just ext-review</code>
-          <code style="color:var(--text-secondary)">just ext-all</code>
-          <code style="color:var(--text-secondary)">just team</code>
-        </div>
-      </div>
-    </aside>
-
-    <!-- Main Chat Area -->
-    <main class="main">
-      <div id="ext-tabs" class="extension-selector">
-        <button class="ext-tab active" data-ext="code-builder">Code Builder</button>
-        <button class="ext-tab" data-ext="code-review">Code Review</button>
-      </div>
-      <div class="chat-container">
-        <div id="chat-messages" class="chat-messages">
-          <div class="message assistant">
-            Welcome to CWOP-SDLC. Select an extension and start a conversation.
-            The Code Builder generates C#, SQL, and Azure code. The Code Review analyzes your PRs.
+      <!-- Carb / Manual Panel -->
+      <div id="carb-panel" class="panel">
+        <div class="carb-form">
+          <div class="form-group">
+            <h3 class="form-group-title">Carburetor</h3>
+            <div class="form-row">
+              <label>Pri Jets<input type="number" id="c-pri-jets" class="form-input" placeholder="67"></label>
+              <label>Sec Jets<input type="number" id="c-sec-jets" class="form-input" placeholder="72"></label>
+              <label>Float<input type="number" id="c-float" class="form-input" step="0.0625" placeholder="0.5"></label>
+              <label>Idle Mix<input type="number" id="c-idle-mix" class="form-input" step="0.25" placeholder="1.5"></label>
+            </div>
+            <div class="form-row">
+              <label>Power Valve<input type="number" id="c-power-valve" class="form-input" step="0.5" placeholder="6.5"></label>
+              <label>Accel Pump
+                <select id="c-accel-pump" class="form-input">
+                  <option value="">--</option><option value="pink">Pink</option><option value="white">White</option><option value="blue">Blue</option>
+                </select>
+              </label>
+              <label>N&amp;S<input type="text" id="c-needle-seat" class="form-input" placeholder=".097"></label>
+            </div>
+          </div>
+          <div class="form-group">
+            <h3 class="form-group-title">Ignition</h3>
+            <div class="form-row">
+              <label>Init Timing<input type="number" id="c-init-timing" class="form-input" placeholder="12"></label>
+              <label>Total Timing<input type="number" id="c-total-timing" class="form-input" placeholder="32"></label>
+              <label>Notes<input type="text" id="c-timing-notes" class="form-input" placeholder="all in by 2800"></label>
+            </div>
+          </div>
+          <div class="form-group">
+            <h3 class="form-group-title">Gauges</h3>
+            <div class="form-row">
+              <label>RPM<input type="number" id="c-rpm" class="form-input" placeholder="750"></label>
+              <label>Vacuum<input type="number" id="c-vacuum" class="form-input" step="0.5" placeholder="17"></label>
+              <label>Coolant<input type="number" id="c-coolant" class="form-input" placeholder="180"></label>
+              <label>Oil PSI<input type="number" id="c-oil" class="form-input" placeholder="55"></label>
+            </div>
+          </div>
+          <div class="form-group">
+            <h3 class="form-group-title">Compression (PSI)</h3>
+            <div class="form-row compression-row">
+              <label>#1<input type="number" id="c-comp-1" class="form-input" placeholder="150"></label>
+              <label>#2<input type="number" id="c-comp-2" class="form-input" placeholder="148"></label>
+              <label>#3<input type="number" id="c-comp-3" class="form-input" placeholder="152"></label>
+              <label>#4<input type="number" id="c-comp-4" class="form-input" placeholder="145"></label>
+              <label>#5<input type="number" id="c-comp-5" class="form-input" placeholder="150"></label>
+              <label>#6<input type="number" id="c-comp-6" class="form-input" placeholder="148"></label>
+              <label>#7<input type="number" id="c-comp-7" class="form-input" placeholder="151"></label>
+              <label>#8<input type="number" id="c-comp-8" class="form-input" placeholder="147"></label>
+            </div>
+          </div>
+          <div class="form-group">
+            <h3 class="form-group-title">Spark Plugs</h3>
+            <div class="form-row compression-row" id="plug-selects">
+              <label>#1<select id="c-plug-1" class="form-input"><option>tan</option><option>dark</option><option>white</option><option>oily</option><option>fouled</option></select></label>
+              <label>#2<select id="c-plug-2" class="form-input"><option>tan</option><option>dark</option><option>white</option><option>oily</option><option>fouled</option></select></label>
+              <label>#3<select id="c-plug-3" class="form-input"><option>tan</option><option>dark</option><option>white</option><option>oily</option><option>fouled</option></select></label>
+              <label>#4<select id="c-plug-4" class="form-input"><option>tan</option><option>dark</option><option>white</option><option>oily</option><option>fouled</option></select></label>
+              <label>#5<select id="c-plug-5" class="form-input"><option>tan</option><option>dark</option><option>white</option><option>oily</option><option>fouled</option></select></label>
+              <label>#6<select id="c-plug-6" class="form-input"><option>tan</option><option>dark</option><option>white</option><option>oily</option><option>fouled</option></select></label>
+              <label>#7<select id="c-plug-7" class="form-input"><option>tan</option><option>dark</option><option>white</option><option>oily</option><option>fouled</option></select></label>
+              <label>#8<select id="c-plug-8" class="form-input"><option>tan</option><option>dark</option><option>white</option><option>oily</option><option>fouled</option></select></label>
+            </div>
+            <div class="form-row" style="margin-top:8px">
+              <label>Plug Gap<input type="number" id="c-plug-gap" class="form-input" step="0.001" value="0.035"></label>
+            </div>
           </div>
         </div>
-        <div class="chat-input-area">
-          <textarea id="chat-input" class="chat-input" rows="2"
-            placeholder="Ask the Code Builder to generate C#, SQL, Azure resources..."></textarea>
-          <button id="send-btn" class="send-btn">Send</button>
+      </div>
+
+      <!-- Recording Bar -->
+      <div class="record-bar">
+        <div class="record-meta">
+          <label>Vehicle<input type="text" id="vehicle-label" class="form-input" placeholder="1975 Monte Carlo"></label>
+          <label>Taken by<input type="text" id="taken-by" class="form-input" placeholder="Your name"></label>
+          <label>Notes<input type="text" id="snap-notes" class="form-input" placeholder="Optional notes"></label>
         </div>
+        <div class="record-buttons" id="record-buttons">
+          <button class="btn btn-record btn-pre" data-type="pre-race">PRE-RACE</button>
+          <button class="btn btn-record btn-post" data-type="post-race">POST-RACE</button>
+          <button class="btn btn-record btn-baseline" data-type="baseline">BASELINE</button>
+        </div>
+      </div>
+
+      <!-- Recent Readings -->
+      <div class="section readings-section">
+        <div class="section-row">
+          <h3>Recent Readings</h3>
+          <div class="spacer"></div>
+          <button id="btn-refresh-readings" class="btn btn-sm">Refresh</button>
+        </div>
+        <div id="readings-list" class="readings-list">
+          <p class="empty-state">No readings yet. Record a snapshot to get started.</p>
+        </div>
+      </div>
+
+      <!-- Comparison View -->
+      <div id="comparison-panel" class="section comparison-panel" style="display:none">
+        <div class="section-row">
+          <h3>Comparison</h3>
+          <div class="spacer"></div>
+          <button id="btn-close-compare" class="btn btn-sm">Close</button>
+        </div>
+        <div id="comparison-content" class="comparison-content"></div>
       </div>
     </main>
   </div>
 
-  <script type="module" src="/js/main.js"></script>
+  <script type="module" src="/js/obd-panel.js"></script>
 </body>
 </html>

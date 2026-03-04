@@ -1,0 +1,18 @@
+[Unit]
+Description=CWOP-SDLC Gateway Server
+After=network-online.target ollama.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/cwop-sdlc
+EnvironmentFile=/home/pi/cwop-sdlc/.env
+ExecStart=/usr/local/bin/bun run src/gateway/server.ts
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
