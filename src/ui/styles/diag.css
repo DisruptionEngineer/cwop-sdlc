@@ -633,3 +633,142 @@ body {
   .record-meta { grid-template-columns: 1fr; }
   .record-buttons { grid-template-columns: 1fr; }
 }
+
+/* ── Virtual Keyboard ── */
+
+.vk-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+}
+.vk-overlay.vk-visible { display: block; }
+
+.vk-keyboard {
+  display: none;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+  background: var(--bg-secondary, #151515);
+  border-top: 2px solid var(--brand, #FFD600);
+  padding: 8px 4px 12px;
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.6);
+  transform: translateY(100%);
+  transition: transform 0.2s ease-out;
+}
+.vk-keyboard.vk-visible {
+  display: block;
+  transform: translateY(0);
+}
+
+.vk-row {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+.vk-row--offset { padding: 0 20px; }
+.vk-row--bottom { margin-top: 2px; }
+
+.vk-key {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  height: 48px;
+  padding: 0 4px;
+  flex: 1;
+  max-width: 115px;
+  background: var(--bg-tertiary, #1E1E1E);
+  color: var(--text-primary, #E8E8E8);
+  border: 1px solid var(--border, #2A2A2A);
+  border-radius: var(--radius-sm, 4px);
+  font-family: var(--font-sans);
+  font-size: 18px;
+  font-weight: 500;
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.08s;
+}
+.vk-key:active {
+  background: var(--brand, #FFD600);
+  color: #0D0D0D;
+}
+
+.vk-key--shift {
+  max-width: 70px;
+  font-size: 20px;
+}
+.vk-key--shift.vk-key--active {
+  background: var(--brand, #FFD600);
+  color: #0D0D0D;
+}
+
+.vk-key--backspace {
+  max-width: 70px;
+  font-size: 22px;
+}
+
+.vk-key--space {
+  flex: 4;
+  max-width: none;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: var(--text-secondary, #8B8B8B);
+}
+
+.vk-key--fn {
+  flex: 1;
+  max-width: 90px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary, #8B8B8B);
+}
+
+.vk-key--done {
+  flex: 1.5;
+  max-width: 120px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  background: var(--brand, #FFD600);
+  color: #0D0D0D;
+  border-color: var(--brand, #FFD600);
+}
+.vk-key--done:active {
+  background: #ccab00;
+}
+
+/* Numpad keys */
+.vk-keyboard--numpad { max-width: 360px; margin: 0 auto; }
+
+.vk-key--num {
+  max-width: 100px;
+  height: 56px;
+  font-family: var(--font-mono, monospace);
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.vk-row--numpad .vk-key--fn,
+.vk-row--numpad .vk-key--done {
+  height: 48px;
+}
+
+/* Active input highlight */
+.vk-input-active {
+  border-color: var(--brand, #FFD600) !important;
+  box-shadow: 0 0 0 2px rgba(255, 214, 0, 0.25) !important;
+  outline: none !important;
+}
+
+/* Push main content up when keyboard is open */
+body.vk-open .main-content {
+  padding-bottom: 260px;
+}
