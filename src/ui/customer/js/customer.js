@@ -70,9 +70,24 @@ function connect() {
   ws.onerror = () => {};
 }
 
+// UUID fallback for older browsers (Midori/WebKit)
+function uuid() {
+  if (typeof crypto !== "undefined" && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(c) {
+    var r = Math.random() * 16 | 0;
+    return (c === "x" ? r : (r & 0x3 | 0x8)).toString(16);
+  });
+}
+
 function send(type, payload) {
-  if (ws?.readyState === WebSocket.OPEN) {
-    ws.send(JSON.stringify({ id: crypto.randomUUID(), type, payload, timestamp: Date.now() }));
+  try {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({ id: uuid(), type: type, payload: payload, timestamp: Date.now() }));
+    }
+  } catch (e) {
+    console.error("[ws] send error:", e);
   }
 }
 

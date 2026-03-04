@@ -7,7 +7,6 @@ import type { ExtensionRegistry } from "../registry/extension-registry.js";
 import type { OllamaProvider } from "../llm/ollama.provider.js";
 import type { CWOPSdlcConfig } from "../../config/cwop-sdlc.config.js";
 import type { WSClient } from "./server.js";
-import { connectSim, disconnectSim, isSimConnected } from "./server.js";
 import type { OBDBridge } from "../obd/obd-bridge.js";
 import type { SnapshotStore, OBDSnapshot, CarbSnapshot, ReadingType, OperatingMode, InputMethod } from "../obd/snapshot-store.js";
 
@@ -22,6 +21,9 @@ interface WSContext {
   getSessionInfo: () => { sessionStartTime: number; totalToolCount: number };
   bridge: OBDBridge;
   snapshots: SnapshotStore;
+  connectSim: () => Promise<{ connected: boolean; scenario: string }>;
+  disconnectSim: () => Promise<void>;
+  isSimConnected: () => boolean;
 }
 
 export async function handleWebSocket(
@@ -29,7 +31,7 @@ export async function handleWebSocket(
   ws: { send: (data: string) => void },
   ctx: WSContext,
 ): Promise<void> {
-  const { registry, ollama, broadcast, broadcastToCustomers, client, wsClients, getSessionInfo, bridge, snapshots } = ctx;
+  const { registry, ollama, broadcast, broadcastToCustomers, client, wsClients, getSessionInfo, bridge, snapshots, connectSim, disconnectSim, isSimConnected } = ctx;
 
   switch (msg.type) {
     case "ping":

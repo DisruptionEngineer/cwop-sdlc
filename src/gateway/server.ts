@@ -188,6 +188,9 @@ const server = Bun.serve({
         getSessionInfo,
         bridge,
         snapshots,
+        connectSim,
+        disconnectSim,
+        isSimConnected,
       }).catch(err => {
         console.error("[ws] Handler error:", err);
       });
@@ -287,9 +290,9 @@ const SIM_URL = "http://10.10.7.54:8080";
 let simConnected = false;
 let simPolling = false;
 
-export function isSimConnected() { return simConnected; }
+function isSimConnected() { return simConnected; }
 
-export async function connectSim(): Promise<{ connected: boolean; scenario: string }> {
+async function connectSim(): Promise<{ connected: boolean; scenario: string }> {
   try {
     const res = await fetch(`${SIM_URL}/api/status`, { signal: AbortSignal.timeout(3000) });
     const data = await res.json() as { scenario: string; name: string; dtcs: string[] };
@@ -308,7 +311,7 @@ export async function connectSim(): Promise<{ connected: boolean; scenario: stri
   }
 }
 
-export async function disconnectSim(): Promise<void> {
+async function disconnectSim(): Promise<void> {
   simConnected = false;
   broadcast({
     id: crypto.randomUUID(),

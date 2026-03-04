@@ -76,6 +76,8 @@ function updateRecordLabels() {
 // ── WebSocket Handlers ───────────────────────────────────
 ws.on("connected", () => {
   updateWSStatus(true);
+  // Register this device as the technician handheld
+  ws.send("device.register", { deviceType: "technician", name: "tech-handheld" });
   ws.send("obd.status");
   ws.send("snapshot.list");
   ws.send("devices.list");
